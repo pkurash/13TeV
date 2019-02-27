@@ -57,8 +57,8 @@ public:
   static  Bool_t PythiaInfoFromFile(TString currFile, Float_t & xsec, Float_t & trials) ;
     
 private:
-  AliAnalysisTaskGammaPHOS13TeV(const AliAnalysisTaskGammaPHOS13TeV&); // not implemented
-  AliAnalysisTaskGammaPHOS13TeV& operator=(const AliAnalysisTaskGammaPHOS13TeV&); // not implemented
+  AliAnalysisTaskGammaPHOS13TeV(const AliAnalysisTaskGammaPHOS13TeV&); 
+  AliAnalysisTaskGammaPHOS13TeV& operator=(const AliAnalysisTaskGammaPHOS13TeV&); 
   
   Bool_t AcceptEvent(AliAODEvent *event);
   Int_t  GetEventCentrality(AliAODEvent *event);
