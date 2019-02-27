@@ -55,8 +55,7 @@ public:
   }
   
   static  Bool_t PythiaInfoFromFile(TString currFile, Float_t & xsec, Float_t & trials) ;
-  
-  
+    
 private:
   AliAnalysisTaskGammaPHOS13TeV(const AliAnalysisTaskGammaPHOS13TeV&); // not implemented
   AliAnalysisTaskGammaPHOS13TeV& operator=(const AliAnalysisTaskGammaPHOS13TeV&); // not implemented
@@ -77,8 +76,6 @@ private:
   void ProcessMC();
   
   Double_t TestGammaPt(AliCaloPhoton *ph);
-  Int_t GetClusterPDG(AliVCluster *clu);
-  Int_t GetClusterPDGNaive(AliVCluster *clu);
   Int_t GetPrimaryLabel(AliVCluster *clu);
   Int_t GetPrimaryLabelAtVertex(AliVCluster *clu);
   Int_t TestTrack(AliAODTrack *track);
@@ -96,7 +93,6 @@ private:
   void Sumw2Histogram(const char * key) const;
   Bool_t PhotonWithinPeak(Double_t Minv, Double_t pt);
 
-  
 private:
  // AliAODtrackCuts *fAODtrackCuts; // Track cut
   AliESDtrackCuts *fESDtrackCuts; // Track cut

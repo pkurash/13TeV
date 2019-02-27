@@ -141,7 +141,7 @@ if(isMC)
         //alienHandler->AddRunNumber(167813);
         Int_t evN;
         ifstream ff;
-        ff.open(Form("LHC16%s-pass1.txt",per));
+        ff.open(Form("datasets/LHC16%s-pass1.txt",per));
         //ff.open(Form("LHC16%s-pass1_1.txt",per));
         //ff.open(Form("LHC16%s-pass1_lost.txt",per));
         //Add runs
