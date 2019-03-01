@@ -8,14 +8,14 @@
 #include "AliTender.h"
 #endif
 void LoadEnv();
-void runAnalysis13()
+void runAnalysis13(Bool_t local = kTRUE, char* period = "LHC16g", char* runmode = "terminate")
 {
     // set if you want to run the analysis locally (kTRUE), or on grid (kFALSE)
-    Bool_t local = kTRUE;
+    //Bool_t local = kTRUE;
     // if you run on grid, specify test mode (kTRUE) or full grid model (kFALSE)
     Bool_t gridTest = kFALSE;
     // specify period for GRID
-    char per[3]="p"; // g, h, i, j, k, l, o, p
+    //char per[3]="p"; // g, h, i, j, k, l, o, p
 
     Int_t Nrun[500];
     Int_t nn = 0;
@@ -131,7 +131,7 @@ if(isMC)
         // set the Alien API version
         alienHandler->SetAPIVersion("V1.1x");
         // select the input data
-        alienHandler->SetGridDataDir(Form("/alice/data/2016/LHC16%s",per));
+        alienHandler->SetGridDataDir(Form("/alice/data/2016/%s", period));
         alienHandler->SetDataPattern("/pass1/AOD/*/AliAOD.root");
         // MC has no prefix, data has prefix 000
         alienHandler->SetRunPrefix("000");
@@ -141,9 +141,8 @@ if(isMC)
         //alienHandler->AddRunNumber(167813);
         Int_t evN;
         ifstream ff;
-        ff.open(Form("datasets/LHC16%s-pass1.txt",per));
-        //ff.open(Form("LHC16%s-pass1_1.txt",per));
-        //ff.open(Form("LHC16%s-pass1_lost.txt",per));
+        ff.open(Form("datasets/%s-pass1.txt",period));
+ 
         //Add runs
         while( !ff.eof() )
         {
@@ -176,7 +175,7 @@ if(isMC)
         alienHandler->SetMergeViaJDL(kTRUE);
 
         // define the output folders
-        alienHandler->SetGridWorkingDir(Form("pp_Analysis/LHC16%s",per));
+        alienHandler->SetGridWorkingDir(Form("pp_Analysis/%s",period));
         alienHandler->SetGridOutputDir("pass1");
 
         // connect the alien plugin to the manager
@@ -192,7 +191,7 @@ if(isMC)
          else 
          {
             // else launch the full grid analysis
-            alienHandler->SetRunMode("terminate");
+            alienHandler->SetRunMode(runmode);
             mgr->StartAnalysis("grid");
          }
     }

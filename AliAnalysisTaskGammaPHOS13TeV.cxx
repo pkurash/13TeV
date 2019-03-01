@@ -1260,14 +1260,12 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
     energy = clu1->E();
     digMult = clu1->GetNCells();
 
-    if(clu1->E()       < 0.3) continue;
-    if(clu1->GetNCells() < 3) continue ;
-    if( !clu1->IsPHOS()     ) continue;
-    if(fEvent->GetRunNumber() > 200000)
     {
       if(clu1->GetType() != AliVCluster::kPHOSNeutral)      continue;
       if(TMath::Abs(clu1->GetTOF()) > 12.5e-9 && !fMCArray) continue; // TOF cut
     }
+
+
     if ( !IsGoodChannel("PHOS",mod1,cellX,cellZ) ) continue ;
     if (mod1 < 1 || mod1 > 4) 
     {
@@ -1334,6 +1332,11 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       FillHistogram("hPhotonPt", pT);
       FillHistogram("hPhotonPx", pX);
       FillHistogram("hPhotonPy", pY);
+
+    if(clu1->E()       < 0.3) continue;
+    if(clu1->GetNCells() < 3) continue ;
+    if( !clu1->IsPHOS()     ) continue;
+    if(fEvent->GetRunNumber() > 200000)
  
       FillHistogram("hEmcCPVDistance", clu1->GetEmcCpvDistance());
       TestMatchingTrackPID(clu1, p11.Pt());
