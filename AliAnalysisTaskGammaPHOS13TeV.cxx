@@ -1350,10 +1350,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       ph->SetEMCy(global1.Y());
       ph->SetEMCz(global1.Z());
       ph->SetDispBit(clu1->Chi2() < 2.5*2.5);
-      if (fEvent->GetRunNumber() > 200000 /*13 TeV*/)
-          ph->SetCPVBit(clu1->GetType() == AliVCluster::kPHOSNeutral) ;
-      else if(fEvent->GetRunNumber() > 110000 && fEvent->GetRunNumber() < 134000 /*7 TeV*/)
-          ph->SetCPVBit(clu1->GetEmcCpvDistance() < 2.5);
+      ph->SetCPVBit(clu1->GetEmcCpvDistance() < 2.5);
       ph->SetBC(TestBC(clu1->GetTOF()));
       ph->SetPrimary(GetPrimaryLabel(clu1));
       ph->SetPrimaryAtVertex(GetPrimaryLabelAtVertex(clu1));
@@ -2030,15 +2027,9 @@ void AliAnalysisTaskGammaPHOS13TeV::TestMatchingTrackPID(AliVCluster *clu1, Doub
   
     Bool_t CPVBit = kFALSE;
     
-    if(fEvent->GetRunNumber() > 100000 && fEvent->GetRunNumber() < 150000 /*7TeV*/)
-        CPVBit = (clu1->GetEmcCpvDistance() < 2.5);
-    else
-        if(fEvent->GetRunNumber() > 200000 /*13TeV*/)
-           CPVBit = clu1->GetType()==AliVCluster::kPHOSNeutral;
+    CPVBit = clu1->GetType()==AliVCluster::kPHOSNeutral;
         
- 
      Bool_t DispBit = clu1->Chi2() < 2.5*2.5;
-
 
     Int_t NTracksMatched = clu1->GetNTracksMatched();
     Int_t nmaxMatched;
