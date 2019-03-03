@@ -1,3 +1,5 @@
+Will be updated soon!
+
 Gamma production analysis in pp collitions in Run2
 
 Code for running locally and on grid.
@@ -11,4 +13,3 @@ aliroot -b -q  'runAnalysis13.C(Bool_t local = kTRUE, char* period = "LHC16g", c
 changing the parameters of macro at your will
 (local = kTRUE/kFALSE, period = "LHC16{g}/(h, i, j, k, l, o, p)", runmode = "full"/"terminate")
 
-In the case
