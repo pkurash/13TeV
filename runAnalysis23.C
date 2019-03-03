@@ -7,7 +7,7 @@
 #include "AliTender.h"
 #endif
 void LoadEnv(); 
-void runAnalysis23()
+void runAnalysis23(Bool_t local = kTRUE, TString period = "LHC17d20a1_extra", TString runmode = "terminate")
 {
   
     LoadEnv(); 
@@ -98,8 +98,8 @@ void runAnalysis23()
         // if you want to run locally, we need to define some input
         TChain* chain = new TChain("aodTree");
         // add a few files to the chain (change this so that your local files are added)
-        //chain->Add("alien:///alice/sim/2017/LHC17d20a1_extra/258270/AOD/045/AliAOD.root");
-        chain->Add("alien:///alice/sim/2018/LHC18h4/289177/AOD/006/AliAOD.root");
+        chain->Add("alien:///alice/sim/2017/LHC17d20a1_extra/258270/AOD/045/AliAOD.root");
+        //chain->Add("alien:///alice/sim/2018/LHC18h4/289177/AOD/006/AliAOD.root");
         //chain->Add("../MC_AODs/AliAOD.root");
         //chain->Add("AliAOD.root");
         // start the analysis locally, reading the events from the tchain
@@ -126,8 +126,8 @@ void runAnalysis23()
         alienHandler->SetGridDataDir(Form("/alice/sim/2017/LHC17f9_test"));
         alienHandler->SetGridWorkingDir(Form("pp_Analysis/LHC17f9_test"));
 */
-        alienHandler->SetGridDataDir(Form("/alice/sim/2017/LHC17d20a1_extra"));
-        alienHandler->SetGridWorkingDir(Form("pp_Analysis/LHC17d20a1_extra"));
+        alienHandler->SetGridDataDir(Form("/alice/sim/2017/%s", period.Data()));
+        alienHandler->SetGridWorkingDir(Form("pp_Analysis/%s", period.Data()));
 
         alienHandler->SetGridOutputDir("output");
         alienHandler->SetDataPattern("AOD/*/AliAOD.root");
@@ -140,9 +140,8 @@ void runAnalysis23()
         Int_t evN;
         ifstream ff;
         //Add runs
-        ff.open("datasets/runs_LHC17d20a1_extra.dat");
-        //ff.open("runs_LHC17d20a1_extra_4.dat");
-       // ff.open("LHC17f9_test.dat");
+        ff.open(Form("datasets/runs_%s.dat", period.Data()));
+
 
         while( !ff.eof() )
         {
@@ -186,7 +185,7 @@ void runAnalysis23()
         else 
         {
          // else launch the full grid analysis
-            alienHandler->SetRunMode("terminate");
+            alienHandler->SetRunMode(runmode.Data());
             mgr->StartAnalysis("grid");
         }
     }
