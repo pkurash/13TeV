@@ -156,7 +156,10 @@ void AliAnalysisTaskGammaPHOS13TeV::UserCreateOutputObjects()
   fOutputContainer2 = new THashList();
   fOutputContainer2->SetOwner(kTRUE);
   
-////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  const Int_t Ncut = 4;
+  TString cut[Ncut] = {"all", "cpv", "disp", "both"};
+
  //PID Response 
      AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
      if(!man)
@@ -204,17 +207,23 @@ void AliAnalysisTaskGammaPHOS13TeV::UserCreateOutputObjects()
   fOutputContainer->Add(new TH1F(Form("hClusterEnergyM%d", imod),Form("Cluster energy, M%d",imod)  ,5000,0.,50.));
   }
 
-  fOutputContainer->Add(new TH2F("hClusterEvsN"  ,"Cluster energy vs digit multiplicity"    ,5000,0.,50.,40,0.,40.));
+
+ for(Int_t iCut = 0; iCut < Ncut; iCut++) 
+ {
+  fOutputContainer->Add(new TH2F(Form("hClusterEvsN_%s", cut[iCut].Data())  ,"Cluster energy vs digit multiplicity"    ,5000,0.,50.,40,0.,40.));
   for(Int_t imod = 1; imod < 5; imod ++)
   {
-   fOutputContainer->Add(new TH2F(Form("hClusterEvsNM%d", imod),Form("Cluster energy vs digit multiplicity, M%d",imod),5000,0.,50.,40,0.,40.));
+   fOutputContainer->Add(new TH2F(Form("hClusterEvsN_%s_M%d", cut[iCut].Data(), imod),Form("Cluster energy vs digit multiplicity, M%d",imod),5000,0.,50.,40,0.,40.));
+  } 
+
+
+  fOutputContainer->Add(new TH1I(Form("hCellMultClu_%s", cut[iCut].Data())  ,"Cell multiplicity per cluster"    ,200,0,200));
+  for(Int_t imod = 1; imod < 5; imod ++)
+  {
+  fOutputContainer->Add(new TH1I(Form("hCellMultClu_%s_M%d", cut[iCut].Data(), imod),Form("Cell multiplicity per cluster, M%d", imod),200,0,200));
   }
 
-  fOutputContainer->Add(new TH1I("hCellMultClu"  ,"Cell multiplicity per cluster"    ,200,0,200));
-  for(Int_t imod = 1; imod < 5; imod ++)
-  {
-  fOutputContainer->Add(new TH1I(Form("hCellMultCluM%d", imod),Form("Cell multiplicity per cluster, M%d", imod),200,0,200));
-  }
+ }
 
   fOutputContainer->Add(new TH1I("hModule","Module events", 5, 0., 5.));
   fOutputContainer->Add(new TH1F("hSelEvents","Selected events",9, -0.5, 8.5));
@@ -375,36 +384,25 @@ void AliAnalysisTaskGammaPHOS13TeV::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hV0AV0Ctime","V0A time vs V0C time",120,-6.e-6,+6.e-6 ,120,-6.e-6,+6.e-6));
 
 
-  fOutputContainer->Add(new TH1F("hClustPt_all","Cluster P_{t} spectrum",nPt,ptMin,ptMax));
-  fOutputContainer->Add(new TH1F("hClustPt_cpv","Cluster P_{t} spectrum, CPV cut",nPt,ptMin,ptMax));
-  fOutputContainer->Add(new TH1F("hClustPt_disp","Cluster P_{t} spectrum, Disp cut",nPt,ptMin,ptMax));
-  fOutputContainer->Add(new TH1F("hClustPt_both","Cluster P_{t} spectrum, CPV+Disp cut",nPt,ptMin,ptMax));
-  Sumw2Histogram("hClustPt_all");
-  Sumw2Histogram("hClustPt_cpv");
-  Sumw2Histogram("hClustPt_disp");
-  Sumw2Histogram("hClustPt_both");
+ for(Int_t iCut = 0; iCut < Ncut; iCut++) 
+ {
+  fOutputContainer->Add(new TH1F(Form("hClustPt_%s", cut[iCut].Data()),"Cluster P_{t} spectrum",nPt,ptMin,ptMax));
+  Sumw2Histogram(Form("hClustPt_%s", cut[iCut].Data()));
 
   for(Int_t imod = 1; imod <5; imod++)
   {
-  fOutputContainer->Add(new TH1F(Form("hClustPt_all_mod%d", imod), Form("Cluster P_{t} spectrum, M%d", imod), nPt, ptMin, ptMax));
-  fOutputContainer->Add(new TH1F(Form("hClustPt_cpv_mod%d", imod),  Form("Cluster P_{t} spectrum, M%d, CPV cut", imod), nPt, ptMin, ptMax));
-  fOutputContainer->Add(new TH1F(Form("hClustPt_disp_mod%d", imod), Form("Cluster P_{t} spectrum, M%d, Disp cut", imod), nPt, ptMin, ptMax));
-  fOutputContainer->Add(new TH1F(Form("hClustPt_both_mod%d", imod), Form("Cluster P_{t} spectrum, M%d, CPV+Disp cut", imod), nPt, ptMin, ptMax));
-  Sumw2Histogram(Form("hClustPt_all_mod%d",  imod));  
-  Sumw2Histogram(Form("hClustPt_cpv_mod%d",  imod));  
-  Sumw2Histogram(Form("hClustPt_disp_mod%d", imod));  
-  Sumw2Histogram(Form("hClustPt_both_mod%d", imod));  
+  fOutputContainer->Add(new TH1F(Form("hClustPt_%s_mod%d", cut[iCut].Data(), imod), Form("Cluster P_{t} spectrum, M%d", imod), nPt, ptMin, ptMax));
+  Sumw2Histogram(Form("hClustPt_%s_mod%d", cut[iCut].Data(), imod));  
   }
+  
+  fOutputContainer->Add(new TH2F(Form("hClustPtvsNcl_%s", cut[iCut].Data()),"Minumum number of cells in a cluster vs cluster P_{t}",nPt,ptMin,ptMax, 5, 3, 8));
+  Sumw2Histogram(Form("hClustPtvsNcl_%s", cut[iCut].Data()));
 
-  fOutputContainer->Add(new TH2F("hClustPtvsNcl_all","Minumum number of cells in a cluster vs cluster P_{t}",nPt,ptMin,ptMax, 5, 3, 8));
-  Sumw2Histogram("hClustPtvsNcl_all");
-  fOutputContainer->Add(new TH2F("hClustPtvsNcl_cpv","Minumum number of cells in a cluster vs cluster P_{t}",nPt,ptMin,ptMax, 5, 3, 8));
-  Sumw2Histogram("hClustPtvsNcl_cpv");
-  fOutputContainer->Add(new TH2F("hClustPtvsNcl_disp","Minumum number of cells in a cluster vs cluster P_{t}",nPt,ptMin,ptMax, 5, 3, 8));
-  Sumw2Histogram("hClustPtvsNcl_disp");
-  fOutputContainer->Add(new TH2F("hClustPtvsNcl_both","Minumum number of cells in a cluster vs cluster P_{t}",nPt,ptMin,ptMax, 5, 3, 8));
-  Sumw2Histogram("hClustPtvsNcl_both");
 
+  fOutputContainer->Add(new TH2F(Form("hCentralityvsClustPt_%s", cut[iCut].Data()),"Centrality vs ClustPt", nPt,ptMin,ptMax, 8,0., 8.));
+    Sumw2Histogram(Form("hCentralityvsClustPt_%s", cut[iCut].Data()));
+
+ }
 
   fOutputContainer->Add(new TH1F("hTOF","Time of Flight", 1000, 0, 1e-7));
   fOutputContainer->Add(new TH1I("hBC", "BC", 1000, 0, 1000));
@@ -421,17 +419,6 @@ void AliAnalysisTaskGammaPHOS13TeV::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hMinvClustPt_cpv",   "Invarinant mass vs cluster p_{T}, CPV cut",nM, mMin, mMax, nPt, ptMin, ptMax));
   fOutputContainer->Add(new TH2F("hMinvClustPt_disp",  "Invarinant mass vs cluster p_{T}",nM, mMin, mMax, nPt, ptMin, ptMax));
   fOutputContainer->Add(new TH2F("hMinvClustPt_both",  "Invarinant mass vs cluster p_{T}",nM, mMin, mMax, nPt, ptMin, ptMax));
-
-  
-  fOutputContainer->Add(new TH2F("hCentralityvsClustPt_all","Centrality vs ClustPt", nPt,ptMin,ptMax, 8,0., 8.));
-  fOutputContainer->Add(new TH2F("hCentralityvsClustPt_cpv","Centrality vs ClustPt, CPV cut", nPt,ptMin,ptMax, 8,0., 8.));
-  fOutputContainer->Add(new TH2F("hCentralityvsClustPt_disp","Centrality vs ClustPt, dispersion cut", nPt,ptMin,ptMax, 8,0., 8.));
-  fOutputContainer->Add(new TH2F("hCentralityvsClustPt_both","Centrality vs ClustPt, combined cut", nPt,ptMin,ptMax, 8,0., 8.));
-    Sumw2Histogram("hCentralityvsClustPt_all");
-    Sumw2Histogram("hCentralityvsClustPt_cpv");
-    Sumw2Histogram("hCentralityvsClustPt_disp");
-    Sumw2Histogram("hCentralityvsClustPt_both");
-
 
 //--------------------Invariant masses, dispersion cut=======
 
@@ -623,23 +610,16 @@ void AliAnalysisTaskGammaPHOS13TeV::UserCreateOutputObjects()
   fOutputContainer2->Add(new TH2F("fhGenvsMeas_corr","Generated vs measured energy",nPt,ptMin,ptMax,nPt,ptMin,ptMax ));
 
 
-    fOutputContainer2->Add(new TH2F("hClustPdgvsPt_all","Cluster pdg vs p_{T}." ,nPt,ptMin,ptMax,8000, -4000,4000));
-    Sumw2Histogram("hClustPdgvsPt_all");
-    fOutputContainer2->Add(new TH2F("hClustPdgvsPt_cpv","Cluster pdg vs p_{T}, CPV cut", nPt,ptMin,ptMax,8000, -4000, 4000));
-    Sumw2Histogram("hClustPdgvsPt_cpv");
-    fOutputContainer2->Add(new TH2F("hClustPdgvsPt_disp","Cluster pdg vs p_{T}." ,nPt,ptMin,ptMax,8000, -4000, 4000));
-    Sumw2Histogram("hClustPdgvsPt_disp");
-    fOutputContainer2->Add(new TH2F("hClustPdgvsPt_both","Cluster pdg vs p_{T}." ,nPt,ptMin,ptMax,8000, -4000, 4000));
-    Sumw2Histogram("hClustPdgvsPt_both");
 
-    fOutputContainer2->Add(new TH2F("hClustPdgvsPt_all_naive","Cluster pdg vs p_{T} (naive)." ,nPt,ptMin,ptMax,8000, -4000,4000));
-    Sumw2Histogram("hClustPdgvsPt_all_naive");
-    fOutputContainer2->Add(new TH2F("hClustPdgvsPt_cpv_naive","Cluster pdg vs p_{T}, CPV cut (naive)", nPt,ptMin,ptMax,8000, -4000, 4000));
-    Sumw2Histogram("hClustPdgvsPt_cpv_naive");
-    fOutputContainer2->Add(new TH2F("hClustPdgvsPt_disp_naive","Cluster pdg vs p_{T} (naive)." ,nPt,ptMin,ptMax,8000, -4000, 4000));
-    Sumw2Histogram("hClustPdgvsPt_disp_naive");
-    fOutputContainer2->Add(new TH2F("hClustPdgvsPt_both_naive","Cluster pdg vs p_{T} (naive)." ,nPt,ptMin,ptMax,8000, -4000, 4000));
-    Sumw2Histogram("hClustPdgvsPt_both_naive");
+   for(Int_t iCut = 0; iCut < Ncut; iCut++)
+   {
+    fOutputContainer2->Add(new TH2F(Form("hClustPdgvsPt_%s", cut[iCut].Data()),"Cluster pdg vs p_{T}." ,nPt,ptMin,ptMax,8000, -4000,4000));
+    fOutputContainer2->Add(new TH2F(Form("hClustPdgvsPt_%s_naive", cut[iCut].Data()),"Cluster pdg vs p_{T} (naive)." ,nPt,ptMin,ptMax,8000, -4000,4000));
+    Sumw2Histogram(Form("hClustPdgvsPt_%s", cut[iCut].Data()));
+    Sumw2Histogram(Form("hClustPdgvsPt_%s_naive", cut[iCut].Data()));
+    fOutputContainer2->Add(new TH2F(Form("hMatrixEff_%s", cut[iCut].Data()), "Efficiency matrix ", 400, 0., 40., 400, 0., 40.)); 
+   }
+
 
    fOutputContainer->Add(new TH1F("htest","Count events", 1, 0, 1));
    fOutputContainer->Add(new TH1F("hEventCounter","Count accepted events", 1, 0, 1));
@@ -652,11 +632,6 @@ void AliAnalysisTaskGammaPHOS13TeV::UserCreateOutputObjects()
    fOutputContainer2->Add(new TH1I("hpid3", "Pid #sigma<3, #pi, p, K, #beta, Undef", 5, 0., 5.));
    fOutputContainer2->Add(new TH1I("hpid1", "Pid #sigma<1, #pi, p, K, #beta, Undef", 5, 0., 5.));
    fOutputContainer2->Add(new TH1F("hEventCounterMC","Count events",1,0,1));
-    
-   fOutputContainer2->Add(new TH2F("hMatrixEff_all", "Efficiency matrix no cuts", 400, 0., 40., 400, 0., 40.)); 
-   fOutputContainer2->Add(new TH2F("hMatrixEff_cpv", "Efficiency matrix cpv cut", 400, 0., 40., 400, 0., 40.)); 
-   fOutputContainer2->Add(new TH2F("hMatrixEff_disp", "Efficiency matrix disp cut", 400, 0., 40., 400, 0., 40.)); 
-   fOutputContainer2->Add(new TH2F("hMatrixEff_both", "Efficiency matrix cpv+disp cut", 400, 0., 40., 400, 0., 40.)); 
 
   PostData(1, fOutputContainer);
   PostData(2, fOutputContainer2);
@@ -1231,7 +1206,7 @@ void AliAnalysisTaskGammaPHOS13TeV::AnalyseCells()
 
 void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
 {
-  //Select photons
+  //Analyze clusters and select photons for analysis
   
   fInPHOS = 0 ;
   
@@ -1266,7 +1241,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       if(TMath::Abs(clu1->GetTOF()) > 12.5e-9 && !fMCArray) continue; // TOF cut
     }
 
-
+    if( !clu1->IsPHOS() ) continue;
     if ( !IsGoodChannel("PHOS",mod1,cellX,cellZ) ) continue ;
     if (mod1 < 1 || mod1 > 4) 
     {
@@ -1276,13 +1251,44 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
          
     multPHOSClust[0]++;
     FillHistogram("hClusterEnergy",energy);
-    FillHistogram("hClusterEvsN",energy,digMult);
-    FillHistogram("hCellMultClu",digMult);
+    FillHistogram("hCellMultClu_all",digMult);
+    FillHistogram("hClusterEvsN_all",energy,digMult);
+    if(clu1->GetEmcCpvDistance() > 2.5)
+    {
+        FillHistogram("hClusterEvsN_cpv",energy,digMult);
+        FillHistogram("hCellMultClu_cpv",digMult);
+    }
+    if(clu1->Chi2() < 2.5)
+    {
+        FillHistogram("hClusterEvsN_disp",energy,digMult);
+        FillHistogram("hCellMultClu_disp",digMult);
+    }
+    if( clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5)
+    {
+        FillHistogram("hClusterEvsN_both",energy,digMult);
+        FillHistogram("hCellMultClu_both",digMult);
+    }
+
     if      (mod1==1) 
     {
       multPHOSClust[1]++;
-      FillHistogram("hClusterEvsNM1",energy,digMult);
-      FillHistogram("hCellMultCluM1",digMult);
+      FillHistogram("hClusterEvsN_all_M1",energy,digMult);
+      FillHistogram("hCellMultClu_all_M1",digMult);
+      if(clu1->GetEmcCpvDistance() > 2.5)
+      {
+          FillHistogram("hClusterEvsN_cpv_M1",energy,digMult);
+          FillHistogram("hCellMultClu_cpv_M1",digMult);
+      }
+      if(clu1->Chi2() < 2.5)
+      {
+          FillHistogram("hClusterEvsN_disp_M1",energy,digMult);
+          FillHistogram("hCellMultClu_disp_M1",digMult);
+      }
+      if( clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5)
+      {
+          FillHistogram("hClusterEvsN_both_M1",energy,digMult);
+          FillHistogram("hCellMultClu_cpv_M2",digMult);
+      }
       FillHistogram("hClusterEnergyM1",energy);
       FillHistogram("hCluNXZM1",cellX,cellZ,1.);
 
@@ -1291,17 +1297,46 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
     else if (mod1==2) 
     {
       multPHOSClust[2]++;
-      FillHistogram("hClusterEvsNM2",energy,digMult);
-      FillHistogram("hCellMultCluM2",digMult);
-      FillHistogram("hClusterEnergyM2",energy);
+      FillHistogram("hClusterEvsN_all_M2",energy,digMult);
+      FillHistogram("hCellMultClu_all_M2",digMult);
+      if(clu1->GetEmcCpvDistance() > 2.5)
+      {
+          FillHistogram("hClusterEvsN_cpv_M2",energy,digMult);
+          FillHistogram("hCellMultClu_cpv_M2",digMult);
+      }
+      if(clu1->Chi2() < 2.5)
+      {
+          FillHistogram("hClusterEvsN_disp_M2",energy,digMult);
+          FillHistogram("hCellMultClu_disp_M2",digMult);
+      }
+      if( clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5)
+      {
+          FillHistogram("hClusterEvsN_both_M2",energy,digMult);
+          FillHistogram("hCellMultClu_both_M2",digMult);
+      }
       FillHistogram("hCluNXZM2",cellX,cellZ,1.);
       FillHistogram("hCluEXZM2",cellX,cellZ,energy);
     }
     else if (mod1==3) 
     {
       multPHOSClust[3]++;
-      FillHistogram("hClusterEvsNM3",energy,digMult);
-      FillHistogram("hCellMultCluM3",digMult);
+      FillHistogram("hClusterEvsN_all_M3",energy,digMult);
+      FillHistogram("hCellMultClu_all_M3",digMult);
+      if(clu1->GetEmcCpvDistance() > 2.5)
+      {
+          FillHistogram("hClusterEvsN_cpv_M3",energy,digMult);
+          FillHistogram("hCellMultClu_cpv_M3",digMult);
+      }
+      if(clu1->Chi2() < 2.5)
+      {
+          FillHistogram("hClusterEvsN_disp_M3",energy,digMult);
+          FillHistogram("hCellMultClu_disp_M3",digMult);
+      }
+      if( clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5)
+      {
+          FillHistogram("hClusterEvsN_both_M3",energy,digMult);
+          FillHistogram("hCellMultClu_both_M3",digMult);
+      }
       FillHistogram("hClusterEnergyM3",energy);
       FillHistogram("hCluNXZM3",cellX,cellZ,1.);
       FillHistogram("hCluEXZM3",cellX,cellZ,energy);
@@ -1309,8 +1344,23 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
     else if (mod1==4) 
     {
       multPHOSClust[4]++;
-      FillHistogram("hClusterEvsNM4",energy,digMult);
-      FillHistogram("hCellMultCluM4",digMult);
+      FillHistogram("hClusterEvsN_all_M4",energy,digMult);
+      FillHistogram("hCellMultClu_all_M4",digMult);
+      if(clu1->GetEmcCpvDistance() > 2.5)
+      {
+          FillHistogram("hClusterEvsN_cpv_M4",energy,digMult);
+          FillHistogram("hCellMultClu_cpv_M4",digMult);
+      }
+      if(clu1->Chi2() < 2.5)
+      {
+          FillHistogram("hClusterEvsN_disp_M4",energy,digMult);
+          FillHistogram("hCellMultClu_disp_M4",digMult);
+      }
+      if( clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5)
+      {
+          FillHistogram("hClusterEvsN_both_M4",energy,digMult);
+          FillHistogram("hCellMultClu_both_M4",digMult);
+      }
       FillHistogram("hClusterEnergyM4",energy);
       FillHistogram("hCluNXZM4",cellX,cellZ,1.);
       FillHistogram("hCluEXZM4",cellX,cellZ,energy);
@@ -1328,15 +1378,14 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       Double_t pY   = p1.Py();
       if (pAbs<1.e-10) break;
       Double_t kappa = pAbs - TMath::Power(0.135,2)/4./pAbs;
-      
+   
       FillHistogram("hPhotonKappa", kappa);
       FillHistogram("hPhotonPt", pT);
       FillHistogram("hPhotonPx", pX);
       FillHistogram("hPhotonPy", pY);
 
-    if(clu1->E()       < 0.3) continue;
-    if(clu1->GetNCells() < 3) continue ;
-    if( !clu1->IsPHOS()     ) continue;
+      if(clu1->E()       < 0.3) continue;
+      if(clu1->GetNCells() < 3) continue ;
  
       FillHistogram("hEmcCPVDistance", clu1->GetEmcCpvDistance());
       TestMatchingTrackPID(clu1, p11.Pt());
@@ -1350,7 +1399,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       ph->SetEMCy(global1.Y());
       ph->SetEMCz(global1.Z());
       ph->SetDispBit(clu1->Chi2() < 2.5*2.5);
-      ph->SetCPVBit(clu1->GetEmcCpvDistance() < 2.5);
+      ph->SetCPVBit(clu1->GetEmcCpvDistance() > 2.5);
       ph->SetBC(TestBC(clu1->GetTOF()));
       ph->SetPrimary(GetPrimaryLabel(clu1));
       ph->SetPrimaryAtVertex(GetPrimaryLabelAtVertex(clu1));
@@ -2027,7 +2076,7 @@ void AliAnalysisTaskGammaPHOS13TeV::TestMatchingTrackPID(AliVCluster *clu1, Doub
   
     Bool_t CPVBit = kFALSE;
     
-    CPVBit = clu1->GetType()==AliVCluster::kPHOSNeutral;
+    CPVBit = clu1->GetEmcCpvDistance() > 2.5;
         
      Bool_t DispBit = clu1->Chi2() < 2.5*2.5;
 

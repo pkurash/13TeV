@@ -8,7 +8,7 @@
 #include "AliTender.h"
 #endif
 void LoadEnv();
-void runAnalysis13(Bool_t local = kTRUE, char* period = "LHC16g", char* runmode = "terminate")
+void runAnalysis13(Bool_t local = kTRUE, TString period = "LHC16g", TString runmode = "terminate")
 {
     // set if you want to run the analysis locally (kTRUE), or on grid (kFALSE)
     //Bool_t local = kTRUE;
@@ -131,7 +131,7 @@ if(isMC)
         // set the Alien API version
         alienHandler->SetAPIVersion("V1.1x");
         // select the input data
-        alienHandler->SetGridDataDir(Form("/alice/data/2016/%s", period));
+        alienHandler->SetGridDataDir(Form("/alice/data/2016/%s", period.Data()));
         alienHandler->SetDataPattern("/pass1/AOD/*/AliAOD.root");
         // MC has no prefix, data has prefix 000
         alienHandler->SetRunPrefix("000");
@@ -141,7 +141,7 @@ if(isMC)
         //alienHandler->AddRunNumber(167813);
         Int_t evN;
         ifstream ff;
-        ff.open(Form("datasets/%s-pass1.txt",period));
+        ff.open(Form("datasets/%s-pass1.txt", period.Data()));
  
         //Add runs
         while( !ff.eof() )
@@ -175,7 +175,7 @@ if(isMC)
         alienHandler->SetMergeViaJDL(kTRUE);
 
         // define the output folders
-        alienHandler->SetGridWorkingDir(Form("pp_Analysis/%s",period));
+        alienHandler->SetGridWorkingDir(Form("pp_Analysis/%s", period.Data()));
         alienHandler->SetGridOutputDir("pass1");
 
         // connect the alien plugin to the manager
@@ -191,7 +191,7 @@ if(isMC)
          else 
          {
             // else launch the full grid analysis
-            alienHandler->SetRunMode(runmode);
+            alienHandler->SetRunMode(runmode.Data());
             mgr->StartAnalysis("grid");
          }
     }
