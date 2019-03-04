@@ -1186,6 +1186,8 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
   
   fInPHOS = 0 ;
   
+      Printf("fInPHOS = %d, before the cycle", fInPHOS);
+  
   const AliAODVertex *aodVertex5 =  fEvent->GetPrimaryVertex();
 
   Int_t  multPHOSClust[5]  = {0, 0, 0, 0, 0}; 
@@ -1202,15 +1204,14 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
   {
     AliAODCaloCluster *clu1 = fEvent->GetCaloCluster(i1);
 
-    if(fEvent->GetRunNumber() > 209122)
+    if(!clu1->IsPHOS() )
     {
-      if(clu1->GetType() != AliVCluster::kPHOSNeutral)      continue;
-      if(TMath::Abs(clu1->GetTOF()) > 12.5e-9 && !fMCArray) continue; // TOF cut
+       Printf("nr%d is not a PHOS calocluster", i1+1); 
+       continue;
     }
-
-    if( !clu1->IsPHOS() ) continue;
-    if(clu1->GetM02() < 0.2)      continue ;    
-
+    else
+       Printf("nr%d is a PHOS calocluster!!!!!!!!!!", i1+1);  
+         
     clu1->GetPosition(position);
     TVector3 global1(position) ;
     fPHOSGeo->GlobalPos2RelId(global1,relId) ;
@@ -1218,13 +1219,25 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
     cellX = relId[2];
     cellZ = relId[3] ;
     energy = clu1->E();
-    digMult = clu1->GetNCells();
-  
+    digMult = clu1->GetNCells();  
+    
+    Int_t  cellAbsId = clu1->GetCellAbsId(0);
+    fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
+    Printf("Cluster nr: %i, mod1 = %i, digMult = %i, E = %f", i1+1, mod1, digMult, energy );
+      
     if (mod1 < 1 || mod1 > 4) 
     {
       AliError(Form("Wrong module number %d",mod1));
-      return;
+      continue;
     }
+    
+    if(fEvent->GetRunNumber() > 209122)
+    {
+      if(clu1->GetType() != AliVCluster::kPHOSNeutral)      continue;
+      if(TMath::Abs(clu1->GetTOF()) > 12.5e-9 && !fMCArray) continue; // TOF cut
+    }
+       
+    if(clu1->GetM02() < 0.2)      continue ;    
          
     multPHOSClust[0]++;
     FillHistogram("hClusterEnergy",energy);
@@ -1344,7 +1357,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
     }     
      
      AliPHOSAodCluster cluPHOS1(*clu1);
-  
+
      cluPHOS1.GetMomentum(p1 , fVtx0);
      cluPHOS1.GetMomentum(p11, fVtx5);
      
@@ -1387,8 +1400,10 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       FillHistogram("hWeights", ph->GetWeight());      
 
       fInPHOS++ ;
+      
    }
-   
+      Printf("fInPHOS = %d, after the cycle", fInPHOS);
+     
    FillHistogram("hPHOSClusterMult",   multPHOSClust[0]);
    FillHistogram("hPHOSClusterMultM1", multPHOSClust[1]);
    FillHistogram("hPHOSClusterMultM2", multPHOSClust[2]);
