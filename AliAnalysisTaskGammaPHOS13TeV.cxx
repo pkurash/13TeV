@@ -1176,7 +1176,6 @@ void AliAnalysisTaskGammaPHOS13TeV::AnalyseCells()
 }
 
 //------------------------------------------------------------------------------
-
 void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
 {
   //Analyze clusters and select photons for analysis
@@ -1199,6 +1198,15 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
   {
     AliAODCaloCluster *clu1 = fEvent->GetCaloCluster(i1);
 
+    if(fEvent->GetRunNumber() > 209122)
+    {
+      if(clu1->GetType() != AliVCluster::kPHOSNeutral)      continue;
+      if(TMath::Abs(clu1->GetTOF()) > 12.5e-9 && !fMCArray) continue; // TOF cut
+    }
+
+    if( !clu1->IsPHOS() ) continue;
+    if(clu1->GetM02() < 0.2)      continue ;    
+
     clu1->GetPosition(position);
     TVector3 global1(position) ;
     fPHOSGeo->GlobalPos2RelId(global1,relId) ;
@@ -1207,14 +1215,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
     cellZ = relId[3] ;
     energy = clu1->E();
     digMult = clu1->GetNCells();
-
-    if(fEvent->GetRunNumber() > 200000)
-    {
-      if(clu1->GetType() != AliVCluster::kPHOSNeutral)      continue;
-      if(TMath::Abs(clu1->GetTOF()) > 12.5e-9 && !fMCArray) continue; // TOF cut
-    }
-
-    if( !clu1->IsPHOS() ) continue;
+  
     if (mod1 < 1 || mod1 > 4) 
     {
       AliError(Form("Wrong module number %d",mod1));
@@ -1244,27 +1245,27 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
     if      (mod1==1) 
     {
       multPHOSClust[1]++;
-      FillHistogram("hClusterEvsN_all_M1",energy,digMult);
-      FillHistogram("hCellMultClu_all_M1",digMult);
+      FillHistogram("hClusterEvsN_all_M1", energy, digMult);
+      FillHistogram("hCellMultClu_all_M1", digMult);
       if(clu1->GetEmcCpvDistance() > 2.5)
       {
-          FillHistogram("hClusterEvsN_cpv_M1",energy,digMult);
-          FillHistogram("hCellMultClu_cpv_M1",digMult);
+          FillHistogram("hClusterEvsN_cpv_M1", energy, digMult);
+          FillHistogram("hCellMultClu_cpv_M1", digMult);
       }
       if(clu1->Chi2() < 2.5)
       {
-          FillHistogram("hClusterEvsN_disp_M1",energy,digMult);
-          FillHistogram("hCellMultClu_disp_M1",digMult);
+          FillHistogram("hClusterEvsN_disp_M1", energy, digMult);
+          FillHistogram("hCellMultClu_disp_M1", digMult);
       }
       if( clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5)
       {
-          FillHistogram("hClusterEvsN_both_M1",energy,digMult);
-          FillHistogram("hCellMultClu_cpv_M2",digMult);
+          FillHistogram("hClusterEvsN_both_M1", energy,digMult);
+          FillHistogram("hCellMultClu_cpv_M2", digMult);
       }
-      FillHistogram("hClusterEnergyM1",energy);
-      FillHistogram("hCluNXZM1",cellX,cellZ,1.);
+      FillHistogram("hClusterEnergyM1", energy);
+      FillHistogram("hCluNXZM1",cellX, cellZ, 1.);
 
-      FillHistogram("hCluEXZM1",cellX,cellZ,energy);
+      FillHistogram("hCluEXZM1", cellX, cellZ, energy);
     }
     else if (mod1==2) 
     {
@@ -1349,7 +1350,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       Double_t pX   = p1.Px();
       Double_t pY   = p1.Py();
       if (pAbs<1.e-10) break;
-      Double_t kappa = pAbs - TMath::Power(0.135,2)/4./pAbs;
+      Double_t kappa = pAbs - TMath::Power(0.135, 2)/4./pAbs;
    
       FillHistogram("hPhotonKappa", kappa);
       FillHistogram("hPhotonPt", pT);
@@ -1362,7 +1363,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       FillHistogram("hEmcCPVDistance", clu1->GetEmcCpvDistance());
       TestMatchingTrackPID(clu1, p11.Pt());
      
-      new((*fPHOSEvent)[fInPHOS]) AliCaloPhoton(p11.X(),p11.Py(),p11.Z(),p11.E()) ;
+      new((*fPHOSEvent)[fInPHOS]) AliCaloPhoton(p1.X(),p1.Py(),p1.Z(),p1.E()) ;
       AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSEvent->At(fInPHOS) ;
       ph->SetModule(mod1) ;
       ph->SetMomV2(&p11) ;
@@ -1378,7 +1379,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       ph->SetWeight(weight); 
       
       FillHistogram("hvt0vsvt5", p11.Pt()- p1.Pt());
-      FillHistogram("hBC", TestBC(clu1->GetTOF())+0.5);
+      FillHistogram("hBC", TestBC(clu1->GetTOF()) + 0.5);
       FillHistogram("hTOF", clu1->GetTOF());
       FillHistogram("hWeights", ph->GetWeight());      
 
@@ -2023,7 +2024,7 @@ Double_t  AliAnalysisTaskGammaPHOS13TeV::NonlinearCorrection(AliVCluster *clu)
    return (clu->E());
    else
    {
-    if(fEvent->GetRunNumber()> 100000 && fEvent->GetRunNumber() < 150000 /*7TeV*/)
+    if(fEvent->GetRunNumber() < 209122 /*7TeV*/)
     {
      Double_t calib=1.008;
      Double_t ParA=0.015;
@@ -2031,7 +2032,7 @@ Double_t  AliAnalysisTaskGammaPHOS13TeV::NonlinearCorrection(AliVCluster *clu)
      return (( (1+ParA/(1+pow(clu->E()/ParB,2)))*clu->E()*calib)); 
     }
     else
-    if(fEvent->GetRunNumber()> 200000 /*13TeV*/)
+    if(fEvent->GetRunNumber()> 209122 /*13TeV*/)
     {	
      Double_t calib=1.02;
      Double_t ParA=-0.035;
