@@ -46,14 +46,7 @@ public:
         if (mod<1 || mod>5) AliFatal(Form("Wrong module number: %d",mod));     
         else fRecalib[mod-1] = recalib;   
     }
-/*
-  void SetPHOSBadMap(Int_t mod,TH2I * h)
-  {
-    if(fPHOSBadMap[mod]) delete fPHOSBadMap[mod] ;
-    fPHOSBadMap[mod]=new TH2I(*h) ;
-    printf("Set %s \n",fPHOSBadMap[mod]->GetName());  
-  }
-*/  
+
   static  Bool_t PythiaInfoFromFile(TString currFile, Float_t & xsec, Float_t & trials) ;
     
 private:

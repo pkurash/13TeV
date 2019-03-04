@@ -811,8 +811,10 @@ Bool_t AliAnalysisTaskGammaPHOS13TeV::AcceptEvent(AliAODEvent *aodEvent)
   Int_t eventNumberInFile = aodEvent->GetEventNumberInFile();
 
   if (aodEvent->GetPrimaryVertex())
-  if (aodEvent->GetPrimaryVertex()->GetNContributors() > 0 && !fMCArray)
-      eventVtxExist    = kTRUE;
+  if (aodEvent->GetPrimaryVertex()->GetNContributors() <1 && !fMCArray)
+      eventVtxExist    = kFALSE;
+   else        eventVtxExist    = kTRUE; 
+   
 
   if (aodEvent->IsPileupFromSPD())
     eventPileup = kTRUE;
@@ -869,14 +871,16 @@ Bool_t AliAnalysisTaskGammaPHOS13TeV::AcceptEvent(AliAODEvent *aodEvent)
     FillHistogram("hSelEvents",8) ;  
     
     
-  if(esdVertex5->GetNContributors() < 1 || esdVertexSPD->GetNContributors() < 1 ) return kFALSE;
+  if(esdVertex5->GetNContributors() < 1  && !fMCArray)
+     return kFALSE;
+  if(esdVertexSPD->GetNContributors() < 1 && !fMCArray) 
+     return kFALSE;
   if (!eventVtxExist) return kFALSE;
   if (!eventVtxZ10cm) return kFALSE;
   if (eventPileup)    return kFALSE;
   
   return kTRUE;
     
-
 }
 
 /*============================================================================*/
@@ -1341,7 +1345,6 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
      
      AliPHOSAodCluster cluPHOS1(*clu1);
   
-     cluPHOS1.SetE(NonlinearCorrection(clu1));
      cluPHOS1.GetMomentum(p1 , fVtx0);
      cluPHOS1.GetMomentum(p11, fVtx5);
      
@@ -2018,32 +2021,7 @@ Bool_t AliAnalysisTaskGammaPHOS13TeV::PhotonWithinPeak(Double_t Minv, Double_t p
 }
 
 //=================
-Double_t  AliAnalysisTaskGammaPHOS13TeV::NonlinearCorrection(AliVCluster *clu)
-{
-   if(!fMCArray)
-   return (clu->E());
-   else
-   {
-    if(fEvent->GetRunNumber() < 209122 /*7TeV*/)
-    {
-     Double_t calib=1.008;
-     Double_t ParA=0.015;
-     Double_t ParB=0.4;
-     return (( (1+ParA/(1+pow(clu->E()/ParB,2)))*clu->E()*calib)); 
-    }
-    else
-    if(fEvent->GetRunNumber()> 209122 /*13TeV*/)
-    {	
-     Double_t calib=1.02;
-     Double_t ParA=-0.035;
-     Double_t ParB=0.95;
-     return (( (1 + ParA/(1+pow(clu->E()/ParB,2)))*clu->E()*calib)); 
-    }
-    else 
-    return (clu->E());
-   }  
-}
-//=================
+
 void AliAnalysisTaskGammaPHOS13TeV::TestMatchingTrackPID(AliVCluster *clu1, Double_t pt)
 {
   
