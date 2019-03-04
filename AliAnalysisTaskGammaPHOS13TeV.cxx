@@ -1,4 +1,3 @@
-// Analysis task gamma analysis in pp collision
 #include <TSystem.h>
 #include <TFile.h>
 #include <TKey.h>
@@ -41,6 +40,7 @@
 #include "AliVVZERO.h"
 #include "AliPHOSTriggerUtils.h"
 #include "AliAODMCParticle.h"
+#include "AliPHOSTenderSupply.h"
 
 #include "AliPID.h"
 #include "AliPIDResponse.h"
@@ -105,36 +105,28 @@ AliAnalysisTaskGammaPHOS13TeV::AliAnalysisTaskGammaPHOS13TeV(const char *name)
     fVtx0[i] = 0;
     fVtx5[i] = 0;
    } 
-  
-  // Set bad channel map
-  char key[55] ;
-  for(Int_t i=0; i<6; i++)
-  {
-    snprintf(key,55,"PHOS_BadMap_mod%d",i) ;
-    fPHOSBadMap[i]=new TH2I(key,"Bad Modules map",64,0.,64.,56,0.,56.) ;
-   }
-   
-// Initialize the PHOS geometry
-//  fPHOSGeo = AliPHOSGeometry::GetInstance();
+
 //  fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
   fPHOSGeo = AliPHOSGeometry::GetInstance("Run2") ;
 
   AliOADBContainer geomContainer("phosGeo");  
 
-  geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCGeometry.root","PHOSMCRotationMatrixes");
-  Int_t runNumber=254128; //LHC10b 
-  TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
+  geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCGeometry.root", 
+                            "PHOSMCRotationMatrixes");
+
+   Int_t runNumber=254128; //LHC10b 
+   TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
         for(Int_t mod=0; mod < 5; mod++) 
         {
           if(!matrixes->At(mod)) continue;
-//          fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
+         // fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
           printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
           ((TGeoHMatrix*)matrixes->At(mod))->Print() ;
 	}
 	
   //  fWeightFunction= new TF1("fWeightFunction", "1.0", 0., 99999.) ;
 
-    fWeightFunction= new TF1("fWeightFunction","([0]+[1]*x+[2]*x*x)/(1.+[3]*x+[4]*x*x)+[5]*x",0.1,40) ;
+    fWeightFunction= new TF1("fWeightFunction", "([0]+[1]*x+[2]*x*x)/(1.+[3]*x+[4]*x*x)+[5]*x", 0.1, 40) ;
     
     fWeightFunction->SetParameter(0,3.02640e-01);
     fWeightFunction->SetParameter(1,8.59672e-01);
@@ -939,37 +931,8 @@ Int_t AliAnalysisTaskGammaPHOS13TeV::GetEventCentrality(AliAODEvent *event)
 
 }
 
-
-//________________________________________________________________________
-
-Bool_t AliAnalysisTaskGammaPHOS13TeV::IsGoodChannel(const char * det, Int_t mod, Int_t ix, Int_t iz)
-{
-  //Check if this channel belogs to the good ones
-
-  if(strcmp(det,"PHOS")==0)
-  {
-    if(mod>5 || mod<1)
-    {
-      AliError(Form("No bad map for PHOS module %d ",mod)) ;
-      return kTRUE ;
-    }
-    if(!fPHOSBadMap[mod])
-    {
-      AliError(Form("No Bad map for PHOS module %d",mod)) ;
-      return kTRUE ;
-    }
-    if(fPHOSBadMap[mod]->GetBinContent(ix,iz)>0)
-      return kFALSE ;
-    else
-      return kTRUE ;
-  }
-  else
-  {
-    AliError(Form("Can not find bad channels for detector %s ",det)) ;
-  }
-  return kTRUE ;
-}
 //_____________________________________________________________________________
+
 void AliAnalysisTaskGammaPHOS13TeV::FillHistogram(const char * key,Double_t x)const
 {
   //FillHistogram
@@ -1252,7 +1215,6 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
     }
 
     if( !clu1->IsPHOS() ) continue;
-    if ( !IsGoodChannel("PHOS",mod1,cellX,cellZ) ) continue ;
     if (mod1 < 1 || mod1 > 4) 
     {
       AliError(Form("Wrong module number %d",mod1));
@@ -1916,7 +1878,7 @@ Bool_t AliAnalysisTaskGammaPHOS13TeV::Notify()
     return kFALSE;
   }
   
-  Bool_t ok = PythiaInfoFromFile(fCurrFileName,xsection,trials);
+  Bool_t ok = PythiaInfoFromFile(fCurrFileName, xsection, trials);
   
   if(!ok) return kFALSE;
   

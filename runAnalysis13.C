@@ -10,15 +10,10 @@
 void LoadEnv();
 void runAnalysis13(Bool_t local = kTRUE, TString period = "LHC16g", TString runmode = "terminate")
 {
-    // set if you want to run the analysis locally (kTRUE), or on grid (kFALSE)
-    //Bool_t local = kTRUE;
+
     // if you run on grid, specify test mode (kTRUE) or full grid model (kFALSE)
     Bool_t gridTest = kFALSE;
     // specify period for GRID
-    //char per[3]="p"; // g, h, i, j, k, l, o, p
-
-    Int_t Nrun[500];
-    Int_t nn = 0;
 
 /*--------------------------*/
    Int_t  recoPass = 1;
@@ -86,17 +81,8 @@ if(isMC)
     gROOT->LoadMacro("./AliCaloPhoton.cxx++g");
     gROOT->LoadMacro("./AliAnalysisTaskGammaPHOS13TeV.cxx++g");
     gROOT->LoadMacro("AddMyTask13.C");
-    AliAnalysisTaskGammaPHOS13TeV *task = AddMyTask13();
+    AliAnalysisTaskGammaPHOS13TeV *task = AddMyTask13("PhotonAnalysisTask");
 #endif
-
-  // TMacro physseladd(gSystem->ExpandPathName("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"));
-  // AliPhysicsSelectionTask *physseltask = reinterpret_cast<AliPhysicsSelectionTask *>(physseladd.Exec());
-  // taskpt->SelectCollisionCandidates(AliVEvent::kMB);
-
- // task->SetRecalib(1,0.9822696);
- // task->SetRecalib(2,0.9861288);
- // task->SetRecalib(3,1.0072);
-
 
 /*----------------------------------*/
 
@@ -111,9 +97,7 @@ if(isMC)
         // if you want to run locally, we need to define some input
         TChain* chain = new TChain("aodTree");
         // add a few files to the chain (change this so that your local files are added)
-//        chain->Add("alien:///alice/data/2010/LHC10d/000126285/pass4/AOD172/0001/AliAOD.root");
         chain->Add("alien:///alice/data/2016/LHC16g/000254128/pass1/AOD/031/AliAOD.root");
-        //chain->Add("AliAOD.root");
         // start the analysis locally, reading the events from the tchain
         mgr->StartAnalysis("local", chain);
     } else {
@@ -137,18 +121,18 @@ if(isMC)
         alienHandler->SetRunPrefix("000");
 
    /*-------------------------*/
-        // runnumber
-        //alienHandler->AddRunNumber(167813);
+        // Add runs by numbers
+        Int_t Nrun[500];
+        Int_t nn = 0;
+
         Int_t evN;
         ifstream ff;
         ff.open(Form("datasets/%s-pass1.txt", period.Data()));
  
-        //Add runs
         while( !ff.eof() )
         {
          ff>>Nrun[nn];  
          nn = nn + 1;
-       //  alienHandler->AddRunNumber(evN);
         }
         ff.close();
 

@@ -46,14 +46,14 @@ public:
         if (mod<1 || mod>5) AliFatal(Form("Wrong module number: %d",mod));     
         else fRecalib[mod-1] = recalib;   
     }
-
+/*
   void SetPHOSBadMap(Int_t mod,TH2I * h)
   {
     if(fPHOSBadMap[mod]) delete fPHOSBadMap[mod] ;
     fPHOSBadMap[mod]=new TH2I(*h) ;
     printf("Set %s \n",fPHOSBadMap[mod]->GetName());  
   }
-  
+*/  
   static  Bool_t PythiaInfoFromFile(TString currFile, Float_t & xsec, Float_t & trials) ;
     
 private:
@@ -66,7 +66,6 @@ private:
   void FillOnePhotonHistograms(AliCaloPhoton *ph);
   void FillTwoPhotonHistograms();
   void MixPhotons();
-  Bool_t IsGoodChannel(const char * det, Int_t mod,Int_t ix, Int_t iz);
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
@@ -107,7 +106,6 @@ private:
   Int_t fnCINT1C;           // Number of CINT1C triggers
   Int_t fnCINT1E;           // Number of CINT1E triggers
 
-  TH2I *fPHOSBadMap[6] ;    //Container for PHOS bad channels map
   Double_t fRecalib[5];     // Correction for abs.calibration per module
   Double_t fBCgap;          // time gap between BC in seconds
   Double_t fVtx0[3];
