@@ -1187,8 +1187,6 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
   
   fInPHOS = 0 ;
   
-      Printf("fInPHOS = %d, before the cycle", fInPHOS);
-  
   const AliAODVertex *aodVertex5 =  fEvent->GetPrimaryVertex();
 
   Int_t  multPHOSClust[5]  = {0, 0, 0, 0, 0}; 
@@ -1206,12 +1204,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
     AliAODCaloCluster *clu1 = fEvent->GetCaloCluster(i1);
 
     if(!clu1->IsPHOS() )
-    {
-       Printf("nr%d is not a PHOS calocluster", i1+1); 
        continue;
-    }
-    else
-       Printf("nr%d is a PHOS calocluster!!!!!!!!!!", i1+1);  
          
     clu1->GetPosition(position);
     TVector3 global1(position) ;
@@ -1224,7 +1217,6 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
     
     Int_t  cellAbsId = clu1->GetCellAbsId(0);
     fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
-    Printf("Cluster nr: %i, mod1 = %i, digMult = %i, E = %f", i1+1, mod1, digMult, energy );
       
     if (mod1 < 1 || mod1 > 4) 
     {
@@ -1403,7 +1395,6 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       fInPHOS++ ;
       
    }
-      Printf("fInPHOS = %d, after the cycle", fInPHOS);
      
    FillHistogram("hPHOSClusterMult",   multPHOSClust[0]);
    FillHistogram("hPHOSClusterMultM1", multPHOSClust[1]);
