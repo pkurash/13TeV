@@ -61,6 +61,9 @@ if(isMC)
     PHOSSupply->ApplyZeroSuppression(zs_threshold); 
 }
 
+    TString nonlinearity = isMC ? "Run2Tune" : "Run2TuneMC";
+    PHOSSupply->SetNonlinearityVersion(nonlinearity); 
+
 /*--------------------------*/
 
  TMacro addresp(gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"));
