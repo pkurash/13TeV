@@ -55,7 +55,7 @@ private:
   
   Bool_t AcceptEvent(AliAODEvent *event);
   Int_t  GetEventCentrality(AliAODEvent *event);
-  void SelectClusters();
+  void SelectClusters(AliAODCaloCluster *clu1);
   void FillOnePhotonHistograms(AliCaloPhoton *ph);
   void FillTwoPhotonHistograms();
   void MixPhotons();
@@ -63,7 +63,7 @@ private:
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
   void PHOSvsEMCALClusters();
-  void AnalyseCells();
+  void AnalyzeCells();
   //Bool_t TestLambda(Double_t l1,Double_t l2, Double_t R) ;
   void ProcessMC();
   

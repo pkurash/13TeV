@@ -729,13 +729,19 @@ pidcomb->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF|AliPIDR
 /*----------------------------------------------------------------------------*/
 /* PHOS cells and clusters */
 
-   AnalyseCells();
+   AnalyzeCells();
 
-   SelectClusters();
+   fInPHOS = 0 ;
    
-   for(Int_t i = 0; i < fInPHOS; i++)
+   for(Int_t ic = 0; ic < fEvent->GetNumberOfCaloClusters(); ic++)
    {
-     AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSEvent->At(i) ;
+      AliAODCaloCluster *clu1 = fEvent->GetCaloCluster(ic);
+      SelectClusters(clu1);
+   }
+   
+   for(Int_t iph = 0; iph < fInPHOS; iph++)
+   {
+     AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSEvent->At(iph) ;
      FillOnePhotonHistograms(ph);
    }
 
@@ -1123,7 +1129,7 @@ void AliAnalysisTaskGammaPHOS13TeV::ProcessMC()
   
 }
 //------------------------------------------------------------------------------
-void AliAnalysisTaskGammaPHOS13TeV::AnalyseCells()
+void AliAnalysisTaskGammaPHOS13TeV::AnalyzeCells()
 {
   AliAODCaloCells *cells = fEvent->GetPHOSCells();
 
@@ -1181,15 +1187,11 @@ void AliAnalysisTaskGammaPHOS13TeV::AnalyseCells()
 }
 
 //------------------------------------------------------------------------------
-void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
+void AliAnalysisTaskGammaPHOS13TeV::SelectClusters(AliAODCaloCluster *clu1)
 {
   //Analyze clusters and select photons for analysis
-  
-  fInPHOS = 0 ;
-  
-  const AliAODVertex *aodVertex5 =  fEvent->GetPrimaryVertex();
 
-  Int_t  multPHOSClust[5]  = {0, 0, 0, 0, 0}; 
+  Int_t  multPHOSClust[5]  = {0, 0, 0, 0, 0}; //ignore it 
   
   TLorentzVector p1, p11;
   
@@ -1197,40 +1199,33 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
   Float_t  position[3];  
   Int_t digMult;
   Double_t energy;
-  Double_t weight = 1;
-  
-  for (Int_t i1 = 0; i1 < fEvent->GetNumberOfCaloClusters(); i1 ++) 
-  {
-    AliAODCaloCluster *clu1 = fEvent->GetCaloCluster(i1);
+  Double_t weight = 1.0;
 
-    if(!clu1->IsPHOS() )
-       continue;
+    if(!clu1->IsPHOS() ) return;
          
     clu1->GetPosition(position);
     TVector3 global1(position) ;
     fPHOSGeo->GlobalPos2RelId(global1,relId) ;
     mod1  = relId[0] ;
-    cellX = relId[2];
+    cellX = relId[2] ;
     cellZ = relId[3] ;
     energy = clu1->E();
     digMult = clu1->GetNCells();  
     
-    Int_t  cellAbsId = clu1->GetCellAbsId(0);
+    cellAbsId = clu1->GetCellAbsId(0);
     fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
       
     if (mod1 < 1 || mod1 > 4) 
     {
-      AliError(Form("Wrong module number %d",mod1));
-      continue;
+      Printf("Wrong module number %d", mod1);
+      return;
     }
     
     if(fEvent->GetRunNumber() > 209122)
     {
-      if(clu1->GetType() != AliVCluster::kPHOSNeutral)      continue;
-      if(TMath::Abs(clu1->GetTOF()) > 12.5e-9 && !fMCArray) continue; // TOF cut
+      if(clu1->GetType() != AliVCluster::kPHOSNeutral)      return;
+      if(TMath::Abs(clu1->GetTOF()) > 12.5e-9 && !fMCArray) return; // TOF cut
     }
-       
-    if(clu1->GetM02() < 0.2)      continue ;    
          
     multPHOSClust[0]++;
     FillHistogram("hClusterEnergy",energy);
@@ -1358,7 +1353,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       Double_t pT   = p1.Pt();
       Double_t pX   = p1.Px();
       Double_t pY   = p1.Py();
-      if (pAbs<1.e-10) break;
+      if (pAbs<1.e-10) return;
       Double_t kappa = pAbs - TMath::Power(0.135, 2)/4./pAbs;
    
       FillHistogram("hPhotonKappa", kappa);
@@ -1366,9 +1361,10 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       FillHistogram("hPhotonPx", pX);
       FillHistogram("hPhotonPy", pY);
 
-      if(clu1->E()       < 0.3) continue;
-      if(clu1->GetNCells() < 3) continue ;
- 
+      if(clu1->E()       < 0.3) return;
+      if(clu1->GetNCells() < 3) return ;       
+      if(clu1->GetM02() < 0.2)  return ;    
+
       FillHistogram("hEmcCPVDistance", clu1->GetEmcCpvDistance());
       TestMatchingTrackPID(clu1, p11.Pt());
      
@@ -1393,14 +1389,13 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters()
       FillHistogram("hWeights", ph->GetWeight());      
 
       fInPHOS++ ;
-      
-   }
-     
+/*     
    FillHistogram("hPHOSClusterMult",   multPHOSClust[0]);
    FillHistogram("hPHOSClusterMultM1", multPHOSClust[1]);
    FillHistogram("hPHOSClusterMultM2", multPHOSClust[2]);
    FillHistogram("hPHOSClusterMultM3", multPHOSClust[3]);
    FillHistogram("hPHOSClusterMultM4", multPHOSClust[4]);
+*/   
 }
 
 //===========================================================================
