@@ -818,12 +818,9 @@ Bool_t AliAnalysisTaskGammaPHOS13TeV::AcceptEvent(AliAODEvent *aodEvent)
 
   if (aodEvent->GetPrimaryVertex()->GetNContributors() <1 && !fMCArray)
       eventVtxExist    = kFALSE;
-    else     
-    {
+    else  
       eventVtxExist    = kTRUE; 
-    }
    
-
   if (aodEvent->IsPileupFromSPD())
     eventPileup = kTRUE;
  
