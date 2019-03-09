@@ -70,7 +70,7 @@ void runTaskGammaPHOS13TeV( Bool_t isMC    =  kFALSE,
         if(isMC)
            chain->Add("alien:///alice/sim/2017/LHC17d20a1_extra/258270/AOD/045/AliAOD.root");        
         else
-           chain->Add("alien:///alice/data/2016/LHC16g/000254128/pass1/AOD/031/AliAOD.root");
+           chain->Add("alien:///alice/data/2016/LHC16g/000254128/pass1/AOD208/0031/AliAOD.root");
 
         mgr->StartAnalysis("local", chain);
     } else {
@@ -102,8 +102,8 @@ void runTaskGammaPHOS13TeV( Bool_t isMC    =  kFALSE,
         }
         else
         {
-           alienHandler->SetGridDataDir(Form("/alice/data/2016/%s", period.Data()));
-           alienHandler->SetDataPattern("/pass1/AOD/*/AliAOD.root");
+           alienHandler->SetGridDataDir(Form("/alice/data/%d/%s", year, period.Data()));
+           alienHandler->SetDataPattern("/pass1/AOD208/*/AliAOD.root");
            alienHandler->SetRunPrefix("000");
         }
         // define the output folders
@@ -142,15 +142,12 @@ void runTaskGammaPHOS13TeV( Bool_t isMC    =  kFALSE,
         mgr->SetGridHandler(alienHandler);
         if(gridTest) 
         {
-            // speficy on how many files you want to run
             alienHandler->SetNtestFiles(1);
-            // and launch the analysis
             alienHandler->SetRunMode("test");
             mgr->StartAnalysis("grid");
          } 
          else 
          {
-            // else launch the full grid analysis
             alienHandler->SetRunMode(runmode.Data());
             mgr->StartAnalysis("grid");
          }
