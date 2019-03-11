@@ -109,21 +109,6 @@ AliAnalysisTaskGammaPHOS13TeV::AliAnalysisTaskGammaPHOS13TeV(const char *name)
 //  fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
   fPHOSGeo = AliPHOSGeometry::GetInstance("Run2") ;
 
-  AliOADBContainer geomContainer("phosGeo");  
-
-  geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSMCGeometry.root", 
-                            "PHOSMCRotationMatrixes");
-
-   Int_t runNumber=254128; //LHC10b 
-   TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
-        for(Int_t mod=0; mod < 5; mod++) 
-        {
-          if(!matrixes->At(mod)) continue;
-         // fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
-          printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
-          ((TGeoHMatrix*)matrixes->At(mod))->Print() ;
-	}
-	
   //  fWeightFunction= new TF1("fWeightFunction", "1.0", 0., 99999.) ;
 
     fWeightFunction= new TF1("fWeightFunction", "([0]+[1]*x+[2]*x*x)/(1.+[3]*x+[4]*x*x)+[5]*x", 0.1, 40) ;
@@ -709,18 +694,6 @@ pidcomb->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF|AliPIDR
 
   ProcessMC() ;
 
-/*----------------------------------------------------------------------------*/
-/* Rotation matrices */
-
-  if(fEventCounter == 0) 
-  {
-    for(Int_t mod=0; mod<5; mod++) 
-    {
-      if(!fEvent->GetPHOSMatrix(mod)) continue;
-      fPHOSGeo->SetMisalMatrix(fEvent->GetPHOSMatrix(mod),mod) ;
-      Printf("PHOS geo matrix %p for module # %d is set\n", fEvent->GetPHOSMatrix(mod), mod);
-    }
-  }
 /*----------------------------------------------------------------------------*/
 /* Count PHOS and EMCAL clusters */
 
