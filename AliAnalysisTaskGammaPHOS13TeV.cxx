@@ -1162,7 +1162,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters(AliAODCaloCluster *clu1)
 {
   //Analyze clusters and select photons for analysis
 
-  Int_t  multPHOSClust[5]  = {0, 0, 0, 0, 0}; //ignore it 
+  Int_t  multPHOSClust[5]  = {0, 0, 0, 0, 0}; 
   
   TLorentzVector p1, p11;
   
@@ -1171,6 +1171,12 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters(AliAODCaloCluster *clu1)
   Int_t digMult;
   Double_t energy;
   Double_t weight = 1.0;
+
+
+
+//  for (Int_t ic = 0; ic < multClust; ic ++) 
+//  {
+//    AliAODCaloCluster *clu1 = fEvent->GetCaloCluster(ic);
 
     if(!clu1->IsPHOS() ) return;
          
@@ -1185,6 +1191,12 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters(AliAODCaloCluster *clu1)
     
     cellAbsId = clu1->GetCellAbsId(0);
     fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
+    mod1   = relId[0];
+
+//!!!!!!!!!
+    Printf("mod1 = %d E=%0.01f ndigit=%d" , mod1, energy, digMult);
+    if(mod1 > 1000 && energy >0.3)
+       Printf("!!!!!!!!");
       
     if (mod1 < 1 || mod1 > 4) 
     {
@@ -1360,13 +1372,15 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters(AliAODCaloCluster *clu1)
       FillHistogram("hWeights", ph->GetWeight());      
 
       fInPHOS++ ;
-/*     
+      
+//   }
+/*
    FillHistogram("hPHOSClusterMult",   multPHOSClust[0]);
    FillHistogram("hPHOSClusterMultM1", multPHOSClust[1]);
    FillHistogram("hPHOSClusterMultM2", multPHOSClust[2]);
    FillHistogram("hPHOSClusterMultM3", multPHOSClust[3]);
    FillHistogram("hPHOSClusterMultM4", multPHOSClust[4]);
-*/   
+*/
 }
 
 //===========================================================================
