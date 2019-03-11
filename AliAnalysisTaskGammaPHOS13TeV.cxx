@@ -1192,11 +1192,6 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters(AliAODCaloCluster *clu1)
     cellAbsId = clu1->GetCellAbsId(0);
     fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
     mod1   = relId[0];
-
-//!!!!!!!!!
-    Printf("mod1 = %d E=%0.01f ndigit=%d" , mod1, energy, digMult);
-    if(mod1 > 1000 && energy >0.3)
-       Printf("!!!!!!!!");
       
     if (mod1 < 1 || mod1 > 4) 
     {
