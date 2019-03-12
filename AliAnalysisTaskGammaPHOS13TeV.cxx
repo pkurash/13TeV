@@ -106,9 +106,6 @@ AliAnalysisTaskGammaPHOS13TeV::AliAnalysisTaskGammaPHOS13TeV(const char *name)
     fVtx5[i] = 0;
    } 
 
-//  fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
-  fPHOSGeo = AliPHOSGeometry::GetInstance("Run2") ;
-
   //  fWeightFunction= new TF1("fWeightFunction", "1.0", 0., 99999.) ;
 
     fWeightFunction= new TF1("fWeightFunction", "([0]+[1]*x+[2]*x*x)/(1.+[3]*x+[4]*x*x)+[5]*x", 0.1, 40) ;
@@ -639,6 +636,19 @@ void AliAnalysisTaskGammaPHOS13TeV::UserExec(Option_t *)
      Printf("ERROR: Could not retrieve event");
      return;
   }
+
+  fPHOSGeo = AliPHOSGeometry::GetInstance();
+
+  if (fPHOSGeo)
+  {
+      AliInfo("PHOS geometry not initialized, initializing it for you");
+
+      if(fEvent->GetRunNumber() < 224994)
+        fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP"); // Run1 geometry
+      else
+        fPHOSGeo = AliPHOSGeometry::GetInstance("Run2");
+  }
+
   fAllEventCounter++;
 
 /*----------------------------Vertex------------------------------------------*/
@@ -1182,16 +1192,15 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters(AliAODCaloCluster *clu1)
          
     clu1->GetPosition(position);
     TVector3 global1(position) ;
-    fPHOSGeo->GlobalPos2RelId(global1,relId) ;
+    //fPHOSGeo->GlobalPos2RelId(global1,relId) ;
+    
+    cellAbsId = clu1->GetCellAbsId(0);
+    fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
     mod1  = relId[0] ;
     cellX = relId[2] ;
     cellZ = relId[3] ;
     energy = clu1->E();
-    digMult = clu1->GetNCells();  
-    
-    cellAbsId = clu1->GetCellAbsId(0);
-    fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
-    mod1   = relId[0];
+    digMult = clu1->GetNCells(); 
       
     if (mod1 < 1 || mod1 > 4) 
     {
@@ -1209,118 +1218,40 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters(AliAODCaloCluster *clu1)
     FillHistogram("hClusterEnergy",energy);
     FillHistogram("hCellMultClu_all",digMult);
     FillHistogram("hClusterEvsN_all",energy,digMult);
+    FillHistogram(Form("hClusterEnergyM%d", mod1), energy);
+    FillHistogram(Form("hClusterEvsN_all_M%d", mod1), energy, digMult);
+    FillHistogram(Form("hCellMultClu_all_M%d", mod1), digMult);
+    FillHistogram(Form("hCluNXZM%d", mod1), cellX, cellZ, 1.);
     if(clu1->GetEmcCpvDistance() > 2.5)
     {
         FillHistogram("hClusterEvsN_cpv",energy,digMult);
         FillHistogram("hCellMultClu_cpv",digMult);
+        FillHistogram(Form("hClusterEvsN_cpv_M%d", mod1), energy, digMult);
+        FillHistogram(Form("hCellMultClu_cpv_M%d", mod1), digMult);
     }
     if(clu1->Chi2() < 2.5)
     {
         FillHistogram("hClusterEvsN_disp",energy,digMult);
         FillHistogram("hCellMultClu_disp",digMult);
+        FillHistogram(Form("hClusterEvsN_disp_M%d", mod1), energy, digMult);
+        FillHistogram(Form("hCellMultClu_disp_M%d", mod1), digMult);
     }
     if( clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5)
     {
         FillHistogram("hClusterEvsN_both",energy,digMult);
         FillHistogram("hCellMultClu_both",digMult);
+        FillHistogram(Form("hClusterEvsN_both_M%d", mod1), energy,digMult);
+        FillHistogram(Form("hCellMultClu_both_M%d", mod1), digMult);
     }
 
-    if      (mod1==1) 
-    {
+    if (mod1==1) 
       multPHOSClust[1]++;
-      FillHistogram("hClusterEvsN_all_M1", energy, digMult);
-      FillHistogram("hCellMultClu_all_M1", digMult);
-      if(clu1->GetEmcCpvDistance() > 2.5)
-      {
-          FillHistogram("hClusterEvsN_cpv_M1", energy, digMult);
-          FillHistogram("hCellMultClu_cpv_M1", digMult);
-      }
-      if(clu1->Chi2() < 2.5)
-      {
-          FillHistogram("hClusterEvsN_disp_M1", energy, digMult);
-          FillHistogram("hCellMultClu_disp_M1", digMult);
-      }
-      if( clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5)
-      {
-          FillHistogram("hClusterEvsN_both_M1", energy,digMult);
-          FillHistogram("hCellMultClu_cpv_M2", digMult);
-      }
-      FillHistogram("hClusterEnergyM1", energy);
-      FillHistogram("hCluNXZM1",cellX, cellZ, 1.);
-
-      FillHistogram("hCluEXZM1", cellX, cellZ, energy);
-    }
     else if (mod1==2) 
-    {
       multPHOSClust[2]++;
-      FillHistogram("hClusterEvsN_all_M2",energy,digMult);
-      FillHistogram("hCellMultClu_all_M2",digMult);
-      if(clu1->GetEmcCpvDistance() > 2.5)
-      {
-          FillHistogram("hClusterEvsN_cpv_M2",energy,digMult);
-          FillHistogram("hCellMultClu_cpv_M2",digMult);
-      }
-      if(clu1->Chi2() < 2.5)
-      {
-          FillHistogram("hClusterEvsN_disp_M2",energy,digMult);
-          FillHistogram("hCellMultClu_disp_M2",digMult);
-      }
-      if( clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5)
-      {
-          FillHistogram("hClusterEvsN_both_M2",energy,digMult);
-          FillHistogram("hCellMultClu_both_M2",digMult);
-      }
-      FillHistogram("hCluNXZM2",cellX,cellZ,1.);
-      FillHistogram("hCluEXZM2",cellX,cellZ,energy);
-    }
     else if (mod1==3) 
-    {
       multPHOSClust[3]++;
-      FillHistogram("hClusterEvsN_all_M3",energy,digMult);
-      FillHistogram("hCellMultClu_all_M3",digMult);
-      if(clu1->GetEmcCpvDistance() > 2.5)
-      {
-          FillHistogram("hClusterEvsN_cpv_M3",energy,digMult);
-          FillHistogram("hCellMultClu_cpv_M3",digMult);
-      }
-      if(clu1->Chi2() < 2.5)
-      {
-          FillHistogram("hClusterEvsN_disp_M3",energy,digMult);
-          FillHistogram("hCellMultClu_disp_M3",digMult);
-      }
-      if( clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5)
-      {
-          FillHistogram("hClusterEvsN_both_M3",energy,digMult);
-          FillHistogram("hCellMultClu_both_M3",digMult);
-      }
-      FillHistogram("hClusterEnergyM3",energy);
-      FillHistogram("hCluNXZM3",cellX,cellZ,1.);
-      FillHistogram("hCluEXZM3",cellX,cellZ,energy);
-    }
     else if (mod1==4) 
-    {
-      multPHOSClust[4]++;
-      FillHistogram("hClusterEvsN_all_M4",energy,digMult);
-      FillHistogram("hCellMultClu_all_M4",digMult);
-      if(clu1->GetEmcCpvDistance() > 2.5)
-      {
-          FillHistogram("hClusterEvsN_cpv_M4",energy,digMult);
-          FillHistogram("hCellMultClu_cpv_M4",digMult);
-      }
-      if(clu1->Chi2() < 2.5)
-      {
-          FillHistogram("hClusterEvsN_disp_M4",energy,digMult);
-          FillHistogram("hCellMultClu_disp_M4",digMult);
-      }
-      if( clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5)
-      {
-          FillHistogram("hClusterEvsN_both_M4",energy,digMult);
-          FillHistogram("hCellMultClu_both_M4",digMult);
-      }
-      FillHistogram("hClusterEnergyM4",energy);
-      FillHistogram("hCluNXZM4",cellX,cellZ,1.);
-      FillHistogram("hCluEXZM4",cellX,cellZ,energy);
-    }     
+      multPHOSClust[4]++;    
      
      AliPHOSAodCluster cluPHOS1(*clu1);
 
@@ -1369,7 +1300,7 @@ void AliAnalysisTaskGammaPHOS13TeV::SelectClusters(AliAODCaloCluster *clu1)
       fInPHOS++ ;
       
 //   }
-/*
+/*     
    FillHistogram("hPHOSClusterMult",   multPHOSClust[0]);
    FillHistogram("hPHOSClusterMultM1", multPHOSClust[1]);
    FillHistogram("hPHOSClusterMultM2", multPHOSClust[2]);
